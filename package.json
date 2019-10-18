@@ -1,0 +1,19 @@
+{
+  "name": "learn-aws",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xj0707/learn-aws.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/xj0707/learn-aws/issues"
+  },
+  "homepage": "https://github.com/xj0707/learn-aws#readme"
+}
