@@ -1,0 +1,106 @@
+# DynamoDB 配置的属性
+# Type: AWS::DynamoDB::Table
+# Properties: 
+#   AttributeDefinitions: #描述表和索引
+#     - AttributeDefinition
+#   BillingMode: PAY_PER_REQUEST  # 设置读取吞吐量 PAY_PER_REQUEST请求付费 PROVISIONED预设值
+#   GlobalSecondaryIndexes:  #全局二级索引
+#     - GlobalSecondaryIndex
+#   KeySchema:  #主键
+#     - KeySchema
+#   LocalSecondaryIndexes: #本地二级索引
+#     - LocalSecondaryIndex
+#   PointInTimeRecoverySpecification: #用于启用时间点恢复的设置
+#     PointInTimeRecoverySpecification
+#   ProvisionedThroughput: #指定的表的吞吐量BillingMode 设置为 PAY_PER_REQUEST，您无法指定该属性。
+#     ProvisionedThroughput
+#   SSESpecification:  #用于启用服务器端加密的设置
+#     SSESpecification
+#   StreamSpecification: #DynamoDB 表流的设置，用于捕获对存储在表中的项目的变更
+#     StreamSpecification
+#   TableName: String  # 表名称
+#   Tags:  #要应用于此资源的键值对的数组
+#     - Tag
+#   TimeToLiveSpecification:  #为表指定生存时间 (TTL) 设置
+#     TimeToLiveSpecification
+# 返回值
+# Ref : 在将此资源的逻辑 ID 传递给内部 Ref 函数时，Ref 返回 资源名称
+# 示例：{ "Ref": "MyResource" }
+# Fn::GetAtt ：  内部函数返回此类型的一个指定属性的值
+# Arn : DynamoDB 表的 Amazon 资源名称 (ARN)，例如 arn:aws:dynamodb:us-east-2:123456789012:table/myDynamoDBTable
+# StreamArn : DynamoDB 流的 ARN (您必须指定 StreamSpecification 属性才能使用此特性。)
+
+#示例创建一个具有本地和二级索引的的DynamoDB表
+
+AWSTemplateFormatVersion: "2010-09-09"
+Resources: 
+  myDynamoDBTable: 
+    Type: AWS::DynamoDB::Table
+    Properties: 
+      BillingMode: PAY_PER_REQUEST        #设置成请求付费
+      TableName: "myTableName"            #设置表名
+      AttributeDefinitions:               #用于描述表和索引的键架构的属性
+        - 
+          AttributeName: "Album"          #字段名
+          AttributeType: "S"              #值类型  (S|N|B)
+        - 
+          AttributeName: "Artist" 
+          AttributeType: "S"      
+        - 
+          AttributeName: "Sales"  
+          AttributeType: "N"      
+        - 
+          AttributeName: "NumberOfSongs"    
+          AttributeType: "N"      
+      KeySchema:                          #表示键架构的单个元素(设置分区键和排序键标识)
+        - 
+          AttributeName: "Album"          #字段名
+          KeyType: "HASH"                 #分区键
+        - 
+          AttributeName: "Artist"         #字段名
+          KeyType: "RANGE"                #排序键
+      GlobalSecondaryIndexes:             #全局二级索引的属性
+        - 
+          IndexName: "myGSI"              #全局二级索引的名称
+          KeySchema: 
+            - 
+              AttributeName: "Sales"  
+              KeyType: "HASH"             #分区键
+            - 
+              AttributeName: "Artist" 
+              KeyType: "RANGE"            #排序键
+          Projection:                     #从表复制（投影）到全局二级索引的属性,是主键属性和索引键属性（它们会自动投影）之外的属性
+            # NonKeyAttributes:           #表示将投影到索引的非键属性名称
+            #   - "Album"                 #指定的属性
+            #   - "NumberOfSongs"
+            ProjectionType: "ALL"         # 所有表属性都投影到索引中（KEYS_ONLY（只有索引和主键） |INCLUDE（和NoKeyAttributes搭配） |ALL ）
+          # ProvisionedThroughput:        #指定的全局二级索引的预配置吞吐量设置(当BillingMode不设置时，设置吞吐量)
+          #   ReadCapacityUnits: "5"
+          #   WriteCapacityUnits: "5"
+        - 
+          IndexName: "myGSI2"
+          KeySchema: 
+            - 
+              AttributeName: "NumberOfSongs"
+              KeyType: "HASH"
+            - 
+              AttributeName: "Sales"
+              KeyType: "RANGE"
+          Projection: 
+            ProjectionType: "ALL"
+          # ProvisionedThroughput: 
+          #   ReadCapacityUnits: "5"
+          #   WriteCapacityUnits: "5"
+      LocalSecondaryIndexes:              #表示本地二级索引的属性
+        - 
+          IndexName: "myLSI"              
+          KeySchema: 
+            - 
+              AttributeName: "Album"
+              KeyType: "HASH"
+            - 
+              AttributeName: "Sales"
+              KeyType: "RANGE"
+          Projection: 
+            ProjectionType: "ALL"
+         

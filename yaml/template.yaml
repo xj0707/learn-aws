@@ -1,0 +1,64 @@
+# cloudFormation模板格式
+# AWSTemplateFormatVersion: "version date"
+
+# Description:            #可选 描述模板的文本字符串
+#   String
+
+# Metadata:               #可选 提供有关模板的其他信息的对象
+#   template metadata
+
+# Parameters:             #可选 运行时传递到模板的值
+#   set of parameters
+
+# Mappings:               #可选 用来指定条件参数值的密钥和关键值的映射
+#   set of mappings
+
+# Conditions:             #可选 用于控制是否创建某些资源或者是否在堆栈创建或更新过程中为某些资源属性分配值的条件
+#   set of conditions
+
+# Transform:              #可选 指定要使用的 AWS Serverless Application Model (AWS SAM) 的版本
+#   set of transforms
+
+# Resources:              #必须 指定堆栈资源及其属性
+#   set of resources
+
+# Outputs:                #可选 描述在您查看堆栈的属性时返回的值
+#   set of outputs
+
+
+# 下面是模板示例
+
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  Here are some details about the template.
+Parameters:
+  TagCreator:              #引用的名称（下面两个是属性，还有其他属性查看文档）
+    type: String    
+    Default: leo
+  TagService:                #引用的名称（下面两个是属性，还有其他属性查看文档）
+    type: String
+    Default: myserver
+Resources:
+  myDBTable:
+    type: AWS::DynamoDB::Table
+    Properties: 
+      AttributeDefinitions: 
+        - 
+          AttributeName: "userName"
+          AttributeType: "S"
+        - 
+          AttributeName: "pwd"
+          AttributeType: "S"
+      KeySchema: 
+        - 
+          AttributeName: "userName"
+          KeyType: "HASH"
+      BillingMode: "PAY_PER_REQUEST"
+      TableName: "LEO_USER"
+      Tags: 
+        - 
+          Key: "askeycloud.creator"
+          Value: !Ref TagCreator        #这里引用了Parameters的参数TagCreator
+        - 
+          Key: "askeycloud.service"
+          Value: !Ref TagService        #这里引用了Parameters的参数TagService

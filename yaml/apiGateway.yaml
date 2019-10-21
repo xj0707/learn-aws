@@ -1,0 +1,146 @@
+Type: AWS::ApiGateway::RestApi        #资源创建一个 REST API
+Properties: 
+  # ApiKeySourceType: String            #用于根据使用计划对请求进行计量的 API 键的源
+  # BinaryMediaTypes:                   #RestApi 资源支持的二进制媒体类型 (例如 image/png、application/octet-stream) 的列表
+  #   - String
+  # Body: Json                          #定义一组 JSON 格式的 RESTful API 的 OpenAPI 规范
+  # BodyS3Location:                     #指向 OpenAPI 文件（此文件以 JSON 或 YAML 格式定义一组 RESTful API）的 Amazon Simple Storage Service (Amazon S3) 位置。
+  #   S3Location
+  # CloneFrom: String                   #要克隆的 RestApi 资源的 ID
+  # Description: String                 #RestApi 资源的描述
+  # EndpointConfiguration:              #API 的终端节点类型的列表
+  #   EndpointConfiguration
+  # FailOnWarnings: Boolean             #指示是否在 API Gateway 创建 RestApi 资源时出现警告的情况下回滚资源
+  # MinimumCompressionSize: Integer     #一个可为空的整数，用于对 API 启用压缩 (使用介于 0 和 10485760 (10M) 字节之间的非负整数，包含端值) 或禁用压缩 (使用空值)。
+  Name: String                        #RestApi 资源的名称。
+  # Parameters:                         #自定义请求的标头参数
+  #   Key : Value
+  # Policy: Json                        #一个 JSON 格式的策略文档，其中包含 RestApi 资源的权限
+
+
+Type: 'AWS::ApiGateway::Resource'       #在 API 中创建资源
+Properties: 
+  ParentId: String                      #如果您需要创建子资源，则为父资源的 ID
+  PathPart: String                      #资源的路径名称
+  RestApiId: String                     #您要在其中创建此资源的 RestApi 资源的 ID
+
+
+Type: 'AWS::ApiGateway::Method'         #资源创建 API Gateway 方法，这些方法定义客户端必须在其请求中发送的参数和正文
+Properties: 
+  # ApiKeyRequired: Boolean               #指示方法是否要求客户端提交有效的 API 密钥
+  # AuthorizationScopes:                  #在方法上配置的授权范围列表。
+  #   - String
+  # AuthorizationType: String             #方法的授权类型
+  # AuthorizerId: String                  #要对此方法使用的授权方的标识符
+  HttpMethod: String                    #客户端用于调用此方法的 HTTP 方法
+  # Integration:                          #该方法在收到请求时调用的后端系统
+  #   Integration
+  # MethodResponses:                      #可发送到调用方法的客户端的响应
+  #   - MethodResponse
+  # OperationName: String                 #方法的易记操作名称
+  # RequestModels:                        #用于响应的内容类型的资源
+  #   Key : Value
+  # RequestParameters:                    #API Gateway 接受的请求参数
+  #   Key : Value
+  # RequestValidatorId: String            #关联的请求验证程序的 ID
+  ResourceId: String                    #API Gateway 资源的 ID
+  RestApiId: String                     #API Gateway 从中创建方法的 RestApi 资源的 ID
+
+
+Type: 'AWS::Lambda::Permission'
+
+
+Type: 'AWS::ApiGateway::Stage'          #为部署创建阶段
+Properties: 
+  # AccessLogSetting:                     #为该阶段中的日志记录访问指定设置
+  #   AccessLogSetting
+  # CacheClusterEnabled: Boolean          #指示是否为阶段启用缓存群集
+  # CacheClusterSize: String              #阶段的缓存群集大小
+  # CanarySetting:                        #为该阶段中的金丝雀部署指定设置
+  #   CanarySetting 
+  # ClientCertificateId: String           #API Gateway 用来调用阶段中的集成终端节点的客户端证书的 ID
+  # DeploymentId: String                  #该阶段关联到的部署的 ID
+  # Description: String                   #阶段的描述
+  # DocumentationVersion: String          #API 文档快照的版本 ID
+  # MethodSettings:                       #阶段中所有方法的设置
+  #   - MethodSetting
+  RestApiId: String                     #使用此阶段部署的 RestApi 资源的 ID
+  # StageName: String                     #阶段的名称，API Gateway 将它用作调用的统一资源标识符 (URI) 中的第一个路径部分
+  # Tags:                                 #与阶段关联的任意标签（键值对）的数组
+  #   - Tag
+  # TracingEnabled: Boolean               #指定是否为该阶段启用主动 X-Ray 跟踪
+  # Variables:                            #一个定义阶段变量的映射 (字符串到字符串映射)，其中变量名作为键，变量值作为值
+  #   Key : Value
+
+
+Type: AWS::ApiGateway::Deployment         #资源将 API Gateway RestApi 资源部署到一个阶段，以便客户端可以通过 Internet 调用 API。该阶段用作环境。
+Properties: 
+  # DeploymentCanarySettings:               #部署指定设置
+  #   DeploymentCanarySettings
+  # Description: String                     #API Gateway 部署的用途的描述
+  RestApiId: String                       #要部署的 RestApi 资源的 ID
+  # StageDescription:                       #配置 API Gateway 随此部署创建的阶段。
+  #   StageDescription
+  # StageName: String                       #API Gateway 随此部署创建的阶段的名称
+
+
+Type: AWS::ApiGateway::Authorizer         #创建一个 API Gateway 可为已启用授权的方法激活的授权层
+Properties: 
+  # AuthType: String                        #一个可选的客户定义的字段，可在 OpenApi 导入和导出中使用该字段而不会影响功能
+  # AuthorizerCredentials: String           #授权方所需的凭证要指定 API Gateway 代入的 IAM 角色，请指定角色的 Amazon 资源名称 (ARN)。要对 Lambda 函数使用基于资源的权限，请指定 null。
+  # AuthorizerResultTtlInSeconds: Integer   #生存时间 (TTL) 期间（以秒为单位
+  AuthorizerUri: String                   #授权方的统一资源标识符 (URI)。如果您为授权方的 Type 属性指定 TOKEN，请指定以下形式的 Lambd 函数 URI：arn:aws:apigateway:region:lambda:path/path
+  # IdentitySource: String                  #如果为 Type 属性指定 TOKEN 或 COGNITO_USER_POOLS，请指定采用 method.request.header.name 形式的标头映射表达式，其中 name 是客户端作为请求的一部分提交的自定义授权标头的名称
+  # IdentityValidationExpression: String    #传入身份的验证表达式。如果您为授权方的 TOKEN 属性指定 Type，请指定正则表达式
+  # Name: String                            #授权方的名称
+  # ProviderARNs:                           #要与此授权方关联的 Amazon Cognito 用户池 Amazon 资源名称 (ARN) 的列表
+  #   - String
+  RestApiId: String                       #API Gateway 在其中创建授权方的 RestApi 资源的 ID
+  Type: String                            #授权方的类型TOKEN|COGNITO_USER_POOLS|REQUEST
+
+
+Type: AWS::ApiGateway::GatewayResponse    #资源为 API 创建网关响应
+Properties: 
+  # ResponseParameters:                     #用于响应的响应参数 (路径、查询字符串和标头)。
+  #   Key : Value
+  # ResponseTemplates:                      #用于响应的响应模板
+  #   Key : Value
+  ResponseType: String                    #响应类型
+  RestApiId: String                       #API 的标识符
+  # StatusCode: String                      #响应的 HTTP 状态代码
+
+
+
+
+
+Type: AWS::ApiGateway::Account  #资源指定 Amazon API Gateway 用来将 API 日志写入 Amazon CloudWatch Logs 的 IAM 角色
+Properties: 
+  # CloudWatchRoleArn: String     #具有对您的账户中 CloudWatch Logs 写权限的 IAM 角色的 Amazon 资源名称 (ARN)
+
+
+Type: AWS::ApiGateway::ApiKey   #资源创建唯一密钥，您可将该密钥分发到需要 API 密钥来执行 API Gateway Method 资源的客户端
+Properties: 
+  # CustomerId: String            #与 AWS SaaS Marketplace 集成时要使用的 AWS Marketplace 客户标识符。
+  # Description: String           #API 密钥用途的描述
+  # Enabled: Boolean              #指示客户端是否可以使用 API 密钥
+  # GenerateDistinctId: Boolean   #指定键标识符是否不同于创建的 API 键值
+  # Name: String                  #API 键的名称。如果不指定名称，则 AWS CloudFormation 会生成一个唯一的物理 ID 并将该 ID 用于 API 键名称
+  # StageKeys:                    #要与此 API 键关联的阶段的列表
+  #   - RestApiId: String         #包含要与 API 密钥关联的阶段的 RestApi 资源的 ID
+  #     StageName: String         #要与 API 键关联的阶段的名称。
+  # Value: String                 #API 密钥的值。
+
+
+Type: AWS::ApiGateway::BasePathMapping    #资源创建一个基本路径，调用 API 的客户端必须在调用 URL 中使用此路径。
+Properties: 
+  # BasePath: String                        #API 调用方必须在 URL 中的域名后提供的基本路径名称。如果指定了该属性，则它不能为空字符串
+  DomainName: String                      #AWS::ApiGateway::DomainName 资源的 DomainName。
+  # RestApiId: String                       #API 的名称
+  # Stage: String                           #API 的阶段的名称
+
+
+
+
+
+
+
