@@ -1,4 +1,5 @@
-# DynamoDB 配置的属性
+# DynamoDB 配置的属性如下
+
 # Type: AWS::DynamoDB::Table
 # Properties: 
 #   AttributeDefinitions: #描述表和索引
@@ -30,8 +31,9 @@
 # Arn : DynamoDB 表的 Amazon 资源名称 (ARN)，例如 arn:aws:dynamodb:us-east-2:123456789012:table/myDynamoDBTable
 # StreamArn : DynamoDB 流的 ARN (您必须指定 StreamSpecification 属性才能使用此特性。)
 
-#示例创建一个具有本地和二级索引的的DynamoDB表
 
+
+#示例创建一个具有本地和二级索引的的DynamoDB表
 AWSTemplateFormatVersion: "2010-09-09"
 Resources: 
   myDynamoDBTable: 

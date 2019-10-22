@@ -1,3 +1,5 @@
+#API Gateway 属性如下  （最后有示例代码）
+
 Type: AWS::ApiGateway::RestApi        #资源创建一个 REST API
 Properties: 
   # ApiKeySourceType: String            #用于根据使用计划对请求进行计量的 API 键的源
@@ -18,14 +20,14 @@ Properties:
   # Policy: Json                        #一个 JSON 格式的策略文档，其中包含 RestApi 资源的权限
 
 
-Type: 'AWS::ApiGateway::Resource'       #在 API 中创建资源
+Type: AWS::ApiGateway::Resource       #在 API 中创建资源
 Properties: 
   ParentId: String                      #如果您需要创建子资源，则为父资源的 ID
   PathPart: String                      #资源的路径名称
   RestApiId: String                     #您要在其中创建此资源的 RestApi 资源的 ID
 
 
-Type: 'AWS::ApiGateway::Method'         #资源创建 API Gateway 方法，这些方法定义客户端必须在其请求中发送的参数和正文
+Type: AWS::ApiGateway::Method         #资源创建 API Gateway 方法，这些方法定义客户端必须在其请求中发送的参数和正文
 Properties: 
   # ApiKeyRequired: Boolean               #指示方法是否要求客户端提交有效的 API 密钥
   # AuthorizationScopes:                  #在方法上配置的授权范围列表。
@@ -47,10 +49,17 @@ Properties:
   RestApiId: String                     #API Gateway 从中创建方法的 RestApi 资源的 ID
 
 
-Type: 'AWS::Lambda::Permission'
+Type: AWS::Lambda::Permission         #授予 AWS 服务或其他账户使用函数的权限
+Properties: 
+  Action: String                        #委托人可以对函数执行的操作
+  # EventSourceToken: String              #对于 Alexa Smart Home 函数，为必须由调用程序提供的令牌
+  FunctionName: String                  #Lambda 函数的名称、版本或别名
+  Principal: String                     #调用该函数的 AWS 服务或账户
+  # SourceAccount: String                 #对于 AWS 服务，为拥有资源的账户的 ID
+  # SourceArn: String                     #对于 AWS 服务，为调用该函数的 AWS 资源的 ARN
 
 
-Type: 'AWS::ApiGateway::Stage'          #为部署创建阶段
+Type: AWS::ApiGateway::Stage          #为部署创建阶段
 Properties: 
   # AccessLogSetting:                     #为该阶段中的日志记录访问指定设置
   #   AccessLogSetting
@@ -111,8 +120,6 @@ Properties:
 
 
 
-
-
 Type: AWS::ApiGateway::Account  #资源指定 Amazon API Gateway 用来将 API 日志写入 Amazon CloudWatch Logs 的 IAM 角色
 Properties: 
   # CloudWatchRoleArn: String     #具有对您的账户中 CloudWatch Logs 写权限的 IAM 角色的 Amazon 资源名称 (ARN)
@@ -139,8 +146,152 @@ Properties:
   # Stage: String                           #API 的阶段的名称
 
 
+# 内部函数 Ref 返回指定 参数 或 资源 的值   !Ref String
+# Fn::GetAtt 内部函数返回模板中的资源的属性值。!GetAtt logicalNameOfResource.attributeName
+# 内部函数 Fn::Sub 将输入字符串中的变量替换为您指定的值     !Sub String
+#内部函数 Fn::Join 将一组值附加到单值中，中间用特定分隔符隔开。!Join [ delimiter, [ comma-delimited list of values ] ]
 
 
+# API Gateway 示例代码
 
+AWSTemplateFormatVersion: "2010-09-09"
+Description: 'Test API Gateway'
+
+Resources:
+  myAPI:                                      #逻辑id名 （只在yaml文件使用与其他无关）
+    Type: AWS::ApiGateway::RestApi            #创建一个 REST API
+    Properties:
+      Name: testApiGateway                    #创建资源的资源名称
+      EndpointConfiguration:                  #指定 REST API 的终端节点类型
+        Types:
+          - REGIONAL                          #EDGE：对于边缘优化 API 及其自定义域名。REGIONAL：对于区域 API 及其自定义域名。PRIVATE：用于私有 API。
+  #第一组资源和方法
+  RefUser:                                    #资源引用逻辑id
+    Type: AWS::ApiGateway::Resource         #创建资源
+    Properties: 
+      ParentId: !GetAtt                       #如果您需要创建子资源，则为父资源的 ID
+        - myAPI
+        - RootResourceId
+      PathPart: user                          #资源的路径名称
+      RestApiId: !Ref myAPI                   #REST API的逻辑id
+  userPut:                                    #资源方法逻辑id名
+    Type: AWS::ApiGateway::Method           #资源创建 API Gateway 方法，这些方法定义客户端必须在其请求中发送的参数和正文
+    Properties: 
+      HttpMethod: PUT                         #客户端用于调用此方法的 HTTP 方法
+      ResourceId: !Ref RefUser                #这个方法是挂载在那个资源id下的（这里是挂载在user路径下的put方法）
+      RestApiId: !Ref myAPI                   #REST API的逻辑id
+      AuthorizerId: !Ref systemAuth           #要对此方法使用的授权方的标识符 (token校验的函数 )
+      AuthorizationType: CUSTOM               #方法的授权类型 指定 AuthorizerId 属性，请为此属性指定 CUSTOM （也就是说这两个是一起配置的）
+      Integration:                            #该方法在收到请求时调用的后端系统 （使用Lambda代理集成需要配置）
+        Type: AWS_PROXY                       #集成类型（AWS|AWS_PROXY|HTTP|HTTP_PROXY|MOCK）
+        IntegrationHttpMethod: POST           #TODO
+        IntegrationResponses:                 #TODO
+          - StatusCode: '200'                 #TODO
+            SelectionPattern: PROXY           #TODO                   
+        Uri: !Sub                             #TODO#集成的统一资源标识符 (URI)
+          - >-
+            arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${functionArn}/invocations
+          - functionArn: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:myAPI_updateUser_PUT'
+      MethodResponses:                        #TODO #可发送到调用方法的客户端的响应
+        - ResponseModels:                     #为响应的内容类型使用的资源
+            application/json: Empty
+          StatusCode: '200'                   #方法响应的状态代码，您将其映射到 IntegrationResponse。
+          ResponseParameters:                 #TODO #API Gateway 发送到调用了方法的客户端的响应参数
+            method.response.header.Access-Control-Allow-Origin: true 
+  #第二组资源和方法
+  RefUsers:                                   
+    Type: AWS::ApiGateway::Resource           
+    Properties: 
+      ParentId: !Ref RefUser                
+      PathPart: users                        
+      RestApiId: !Ref myAPI                  
+  userList:                                    
+    Type: AWS::ApiGateway::Method           
+    Properties: 
+      HttpMethod: GET                         
+      ResourceId: !Ref RefUsers                
+      RestApiId: !Ref myAPI                   
+      AuthorizerId: !Ref systemAuth          
+      AuthorizationType: CUSTOM              
+      Integration:                            
+        Type: AWS_PROXY                       
+        IntegrationHttpMethod: POST           
+        IntegrationResponses:                 
+          - StatusCode: '200'                 
+            SelectionPattern: PROXY                             
+        Uri: !Sub                             
+          - >-
+            arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${functionArn}/invocations
+          - functionArn: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:myAPI_userList_GET'
+      MethodResponses:                        
+        - ResponseModels:                     
+            application/json: Empty
+          StatusCode: '200'                  
+          ResponseParameters:                 
+            method.response.header.Access-Control-Allow-Origin: true 
+
+  permissionUser:
+    Type: AWS::Lambda::Permission 
+    Properties:
+      FunctionName: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:myAPI_updateUser_PUT'     #Lambda 函数的名称、版本或别名
+      Action: 'lambda:InvokeFunction'             #TODO   #委托人可以对函数执行的操作例如，lambda:InvokeFunction 或 lambda:GetFunction。
+      Principal: apigateway.amazonaws.com         #TODO   #调用该函数的 AWS 服务或账户
+      SourceArn: !Join                            #TODO  对于 AWS 服务，为调用该函数的 AWS 资源的 ARN
+        - ''
+        - - 'arn:aws:execute-api:'
+          - !Ref 'AWS::Region'
+          - ':'
+          - !Ref 'AWS::AccountId'
+          - ':'
+          - !Ref myAPI
+          - /*/PUT/user  
+  permissionUsers:
+    Type: AWS::Lambda::Permission 
+    Properties:
+      FunctionName: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:myAPI_userList_GET'     #Lambda 函数的名称、版本或别名
+      Action: 'lambda:InvokeFunction'             #TODO   #委托人可以对函数执行的操作例如，lambda:InvokeFunction 或 lambda:GetFunction。
+      Principal: apigateway.amazonaws.com         #TODO   #调用该函数的 AWS 服务或账户
+      SourceArn: !Join                            #TODO  对于 AWS 服务，为调用该函数的 AWS 资源的 ARN
+        - ''
+        - - 'arn:aws:execute-api:'
+          - !Ref 'AWS::Region'
+          - ':'
+          - !Ref 'AWS::AccountId'
+          - ':'
+          - !Ref myAPI
+          - /*/GET/user/users 
+  permissionAuth:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:myAPI_authorizer'
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Join 
+        - ''
+        - - 'arn:aws:execute-api:'
+          - !Ref 'AWS::Region'
+          - ':'
+          - !Ref 'AWS::AccountId'
+          - ':'
+          - !Ref myAPI
+          - /authorizers/
+          - !Ref systemAuth
+  
+  systemAuth:
+    Type: AWS::ApiGateway::Authorizer
+    Properties:
+      Type: TOKEN                                                 #授权方的类型TOKEN|COGNITO_USER_POOLS|REQUEST
+      Name: String                                                #TODO  #授权方的名称
+      IdentitySource: method.request.header.Authorization         #如果为 Type 属性指定 TOKEN 或 COGNITO_USER_POOLS，请指定采用 method.request.header.name 形式的标头映射表达式，其中 name 是客户端作为请求的一部分提交的自定义授权标头的名称
+      AuthorizerResultTtlInSeconds: 0                             #生存时间 (TTL) 期间（以秒为单位
+      AuthorizerUri: !Sub                                         #授权方的统一资源标识符 (URI)。如果您为授权方的 Type 属性指定 TOKEN，请指定以下形式的 Lambd 函数 URI：arn:aws:apigateway:region:lambda:path/path
+        - >-
+          arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${authFuntionArn}/invocations
+        - authFuntionArn: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:myAPI_authorizer'
+      RestApiId: !Ref myAPI                                       #API Gateway 在其中创建授权方的 RestApi 资源的 ID
+   
+
+
+  
 
 

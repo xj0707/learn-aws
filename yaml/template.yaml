@@ -1,4 +1,5 @@
-# cloudFormation模板格式
+# cloudFormation模板格式如下
+
 # AWSTemplateFormatVersion: "version date"
 
 # Description:            #可选 描述模板的文本字符串
@@ -26,22 +27,21 @@
 #   set of outputs
 
 
-# 下面是模板示例
+# cloudFormation模板示例如下
 
-AWSTemplateFormatVersion: "2010-09-09"
-Description: >
-  Here are some details about the template.
+AWSTemplateFormatVersion: "2010-09-09"        #标识模板的功能。最新的模板格式版本是 2010-09-09，并且它是目前唯一的有效值
+Description: 'Here are some details about the template' #Description 必须紧随 AWSTemplateFormatVersion 部分 模板的描述
 Parameters:
-  TagCreator:              #引用的名称（下面两个是属性，还有其他属性查看文档）
+  TagCreator:                 #引用的名称（下面两个是属性，还有其他属性查看文档）
     type: String    
     Default: leo
   TagService:                #引用的名称（下面两个是属性，还有其他属性查看文档）
     type: String
     Default: myserver
 Resources:
-  myDBTable:
-    type: AWS::DynamoDB::Table
-    Properties: 
+  myDBTable:              #逻辑 ID 必须为字母数字 (A-Za-z0-9)，并且在模板中具有唯一性
+    type: AWS::DynamoDB::Table    #资源类型标识您正在声明的资源的类型
+    Properties:                   #资源属性
       AttributeDefinitions: 
         - 
           AttributeName: "userName"
