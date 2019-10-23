@@ -1,0 +1,155 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: 'Test API Gateway'
+
+Resources:
+  myAPI:                                     
+    Type: AWS::ApiGateway::RestApi           
+    Properties:
+      Name: testApiGateway                   
+      EndpointConfiguration:                 
+        Types:
+          - REGIONAL                        
+
+  RefUser:                                   
+    Type: AWS::ApiGateway::Resource         
+    Properties: 
+      RestApiId: !Ref myAPI   
+      ParentId: !GetAtt                      
+        - myAPI
+        - RootResourceId
+      PathPart: user                         
+                    
+  userPut:                                 
+    Type: AWS::ApiGateway::Method         
+    Properties: 
+      HttpMethod: PUT                        
+      ResourceId: !Ref RefUser              
+      RestApiId: !Ref myAPI 
+      AuthorizationType: CUSTOM
+      AuthorizerId: !Ref myAPIAuth                
+      Integration:                           
+        Type: AWS_PROXY                      
+        IntegrationHttpMethod: POST          
+        IntegrationResponses:                 
+          - StatusCode: '200'                
+            SelectionPattern: PROXY                          
+        Uri: !Sub                           
+          - >-
+            arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${functionArn}/invocations
+          - functionArn: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:HelloWorld'
+      MethodResponses:                        
+        - ResponseModels:                    
+            application/json: Empty
+          StatusCode: '200'                   
+          ResponseParameters:                 
+            method.response.header.Access-Control-Allow-Origin: true 
+  #第二组资源和方法
+  RefUsers:                                   
+    Type: AWS::ApiGateway::Resource           
+    Properties: 
+      ParentId: !Ref RefUser                
+      PathPart: users                        
+      RestApiId: !Ref myAPI                  
+  userList:                                    
+    Type: AWS::ApiGateway::Method           
+    Properties: 
+      HttpMethod: GET                         
+      ResourceId: !Ref RefUsers                
+      RestApiId: !Ref myAPI   
+      AuthorizationType: CUSTOM
+      AuthorizerId: !Ref myAPIAuth                           
+      Integration:                            
+        Type: AWS_PROXY                       
+        IntegrationHttpMethod: POST           
+        IntegrationResponses:                 
+          - StatusCode: '200'                 
+            SelectionPattern: PROXY                             
+        Uri: !Sub                             
+          - >-
+            arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${functionArn}/invocations
+          - functionArn: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:ByeBye'
+      MethodResponses:                        
+        - ResponseModels:                     
+            application/json: Empty
+          StatusCode: '200'                  
+          ResponseParameters:                 
+            method.response.header.Access-Control-Allow-Origin: true 
+
+  permissionUser:
+    Type: AWS::Lambda::Permission 
+    Properties:
+      FunctionName: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:HelloWorld'   
+      Action: 'lambda:InvokeFunction'            
+      Principal: apigateway.amazonaws.com       
+      SourceArn: !Join                          
+        - ''
+        - - 'arn:aws:execute-api:'
+          - !Ref 'AWS::Region'
+          - ':'
+          - !Ref 'AWS::AccountId'
+          - ':'
+          - !Ref myAPI
+          - /*/PUT/user  
+  permissionUsers:
+    Type: AWS::Lambda::Permission 
+    Properties:
+      FunctionName: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:ByeBye'     
+      Action: 'lambda:InvokeFunction'             
+      Principal: apigateway.amazonaws.com       
+      SourceArn: !Join                          
+        - ''
+        - - 'arn:aws:execute-api:'
+          - !Ref 'AWS::Region'
+          - ':'
+          - !Ref 'AWS::AccountId'
+          - ':'
+          - !Ref myAPI
+          - /*/GET/user/users 
+  permissionAuth:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:myAPI-authorizer'
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Join 
+        - ''
+        - - 'arn:aws:execute-api:'
+          - !Ref 'AWS::Region'
+          - ':'
+          - !Ref 'AWS::AccountId'
+          - ':'
+          - !Ref myAPI
+          - /authorizers/
+          - !Ref myAPIAuth
+  stage:
+    Type: 'AWS::ApiGateway::Stage'
+    Properties:
+      StageName: v1
+      Description: V1
+      RestApiId: !Ref myAPI
+      DeploymentId: !Ref deploy
+      Variables:
+        Stack: v1
+  deploy:
+    Type: 'AWS::ApiGateway::Deployment'
+    Properties:
+      RestApiId: !Ref myAPI  
+    DependsOn:
+      - myAPI
+      - myAPIAuth
+      - userPut
+      - userList
+  myAPIAuth:
+    Type: 'AWS::ApiGateway::Authorizer'
+    Properties:
+      IdentitySource: method.request.header.Authorization
+      Name: myAPI-authorizer
+      Type: TOKEN 
+      AuthorizerResultTtlInSeconds: 0
+      AuthorizerUri: !Sub 
+        - >-
+          arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${authFuntionArn}/invocations
+        - authFuntionArn: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:myAPI-authorizer'   
+      RestApiId: !Ref myAPI
+ 
+   

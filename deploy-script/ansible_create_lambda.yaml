@@ -1,0 +1,33 @@
+# Create Lambda functions
+- hosts: localhost
+  tasks:
+    - name: looped creation
+      lambda:
+        name: '{{ item.name }}'
+        state: present
+        zip_file: '{{ item.zip_file }}'
+        handler: '{{ item.handler }}'
+        runtime: 'nodejs10.x'
+        role: 'arn:aws:iam::812643782995:role/service-role/askey-test-lambda-role'
+        environment_variables: '{{ item.env_vars }}'
+        tags:
+          key1: 'value1'
+      loop:
+        - name: HelloWorld
+          zip_file: deploy-script.zip 
+          handler: 'hello-code.handler'
+          env_vars:
+            key1: "first"
+            key2: "second"
+        - name: ByeBye
+          zip_file: deploy-script.zip
+          handler: 'bye-code.handler'
+          env_vars:
+            key1: "1"
+            key2: "2"
+        - name: myAPI-authorizer
+          zip_file: deploy-script.zip 
+          handler: 'auth.handler'
+          env_vars:
+            key1: "x"
+            key2: "j"

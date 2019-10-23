@@ -1,0 +1,19 @@
+
+- hosts: localhost
+  vars:
+    basedir: ../
+  tasks:
+    - name: create a cloudformation stack
+      cloudformation:
+        stack_name: "ansible-cloudformation"
+        # state: "present"
+        # region: "us-east-1"
+        # disable_rollback: true
+        template: "cf_apiGateway.yaml"
+        # template_parameters:
+        #   KeyName: "jmartin"
+        #   DiskType: "ephemeral"
+        #   InstanceType: "m1.small"
+        #   ClusterSize: 3
+        tags:
+          Stack: "ansible-cloudformation"
