@@ -1,0 +1,6 @@
+- hosts: localhost
+  tasks:
+    - name: delete a db stack
+      cloudformation:
+        stack_name: "cloudformation-DynamoDB"
+        state: "absent"

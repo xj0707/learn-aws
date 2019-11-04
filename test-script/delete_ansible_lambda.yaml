@@ -1,0 +1,9 @@
+- hosts: localhost
+  tasks:
+    - name: Delete Lambda functions 
+      lambda:
+        name: '{{ item }}'
+        state: absent
+      loop:
+        - HelloWorld
+        - ByeBye

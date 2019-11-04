@@ -1,0 +1,12 @@
+  - name: create tt apigateway restapi
+    cloudformation:
+      stack_name: "{{apigw_settings.stackname}}"
+      # template_url: "https://test-cloudf-script.s3-ap-northeast-1.amazonaws.com/master-cf-apigw.yaml"
+      template: "{{apigw_settings.cf_template}}"
+      profile: "{{profile}}"
+      region: "{{region}}"
+      # template_parameters:
+      #   restapiName: "{{apigw_settings.restapiName}}"
+      #   authorizerLambdaArn: "arn:aws:lambda:{{region}}:{{accountid}}:function:{{apigw_settings.authorizer_lambda}}"
+      #   requireApikey: "{{apigw_settings.requireApikey}}"
+      tags: "{{common_tags}}"

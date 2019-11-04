@@ -1,0 +1,63 @@
+---
+- hosts: localhost
+
+  vars:
+    basedir: ../
+    profile: default
+    region: ap-northeast-1
+    zipfile: "{{basedir}}/api.zip"
+
+    common_tags:
+      askeycloud.creator: leo_xiao
+      askeycloud.service: leo_test_server
+
+    apigw_settings:
+      stackname: test-apigw-stack
+      cf_template: dev/test-cf-apigw.yaml
+
+    db_settings:
+      stackname: test-dynamodb-stack
+      cf_template: dev/test-cf-db.yaml
+    
+    lambda_settings:
+      runtime: nodejs10.x
+      role: arn:aws:iam::812643782995:role/service-role/askey-test-lambda-role
+      timeout: 30
+      memory: 128
+
+    lambda_functions:
+      - name: tt_user_getUser_GET
+        handler: getUser.handler
+        description: "[leo_xiao] tt, tt get a user."
+        # environment:
+        #   AWS_IS_PROD: "{{lambda_variables.AWS_IS_PROD}}"
+      - name: tt_user_delUser_DELETE
+        handler: deleteUser.handler
+        description: "[leo_xiao] tt, tt delete a user."
+        # environment:
+        #   AWS_IS_PROD: "{{lambda_variables.AWS_IS_PROD}}"
+      - name: tt_user_putUser_PUT
+        handler: putUser.handler
+        description: "[leo_xiao] tt, tt update user."
+        # environment:
+        #   AWS_IS_PROD: "{{lambda_variables.AWS_IS_PROD}}"
+      - name: tt_user_postUser_POST
+        handler: postUser.handler
+        description: "[leo_xiao] tt, tt create user."
+        # environment:
+        #   AWS_IS_PROD: "{{lambda_variables.AWS_IS_PROD}}"
+      - name: tt_user_login_POST
+        handler: login.handler
+        description: "[leo_xiao] tt, tt user login."
+        # environment:
+        #   AWS_IS_PROD: "{{lambda_variables.AWS_IS_PROD}}"
+      - name: tt_user_auth
+        handler: auth.handler
+        description: "[leo_xiao] tt, tt Authorization user."
+        # environment:
+        #   AWS_IS_PROD: "{{lambda_variables.AWS_IS_PROD}}"
+
+  tasks:
+  - include_tasks: dev/ansible-lambda.yaml
+  # - include_tasks: dev/ansible-cf-api-stack.yaml
+  # - include_tasks: dev/ansible-cf-db-stack.yaml

@@ -1,0 +1,40 @@
+# - hosts: localhost
+
+  # tasks:
+    # - name: Zip nodejs source
+    #   archive:
+    #     path: "{{basedir}}/*"
+    #     dest: "{{zipfile}}"
+    #     format: zip
+    #     exclude_path:
+    #       - "{{basedir}}/.vscode"
+    #       - "{{basedir}}/.DS_Store"
+    #       - "{{basedir}}/lambda.yaml"
+    #       - "{{basedir}}/*.zip"
+    #       - "{{basedir}}/deploy"
+    #       - "{{basedir}}/test*"
+
+    - name: Lambda Direct Deploy
+      lambda:
+        name: "{{item.name}}"
+        profile: "{{profile}}"
+        zip_file: "{{zipfile}}"
+        region: "{{region}}"
+        runtime: "{{ item.runtime | default(lambda_settings.runtime) }}"
+        role: "{{ item.role | default(lambda_settings.role) }}"
+        handler: "{{item.handler}}"
+        timeout: "{{ item.timeout | default(lambda_settings.timeout) }}"
+        memory_size: "{{ item.memory | default(lambda_settings.memory) }}"
+        environment_variables: "{{item.environment | default(omit)}}"
+        tags: "{{common_tags}}"
+      with_list: "{{lambda_functions}}"
+      register: "lambda_result"
+    
+    - tags:
+      - never
+      - debug
+      debug:
+        msg:
+          - "{{lambda_result}}"
+    # - name: Clean up
+    #   file: path={{zipfile}} state=absent

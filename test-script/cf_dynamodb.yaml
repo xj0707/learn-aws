@@ -1,0 +1,50 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Parameters:
+  TagCreator:
+    Type: String
+    Default: leo_xiao
+  TagService:
+    Type: String
+    Default: test_server
+Resources: 
+  apiUserName: 
+    Type: AWS::DynamoDB::Table
+    Properties: 
+      TableName: "apiUserName"             
+      AttributeDefinitions:               
+        - 
+          AttributeName: "userId"          
+          AttributeType: "S"              
+        # - 
+        #   AttributeName: "userName" 
+        #   AttributeType: "S"      
+        - 
+          AttributeName: "createAt"  
+          AttributeType: "N"        
+      KeySchema:                         
+        - 
+          AttributeName: "userId"         
+          KeyType: "HASH"                 
+        - 
+          AttributeName: "createAt"        
+          KeyType: "RANGE"  
+      BillingMode: PAY_PER_REQUEST  
+      Tags: 
+        - 
+          Key: "askeycloud.creator"
+          Value: !Ref TagCreator
+        - 
+          Key: "askeycloud.service"
+          Value: !Ref TagService           
+      # GlobalSecondaryIndexes:             
+      #   - 
+      #     IndexName: "userNameIndex"             
+      #     KeySchema: 
+      #       - 
+      #         AttributeName: "userName"  
+      #         KeyType: "HASH"            
+      #       - 
+      #         AttributeName: "createAt" 
+      #         KeyType: "RANGE"           
+      #     Projection:                  
+      #       ProjectionType: "ALL"  

@@ -1,0 +1,68 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Parameters:
+  TagCreator:
+    Type: String
+    Default: leo_xiao
+  TagService:
+    Type: String
+    Default: leo_test_server
+Resources: 
+  TTUser: 
+    Type: AWS::DynamoDB::Table
+    Properties: 
+      TableName: "TT_User"             
+      AttributeDefinitions:               
+        - 
+          AttributeName: "userId"          
+          AttributeType: "S"              
+        - 
+          AttributeName: "userName" 
+          AttributeType: "S"      
+        - 
+          AttributeName: "createAt"  
+          AttributeType: "N"        
+      KeySchema:                         
+        - 
+          AttributeName: "userId"         
+          KeyType: "HASH" 
+      BillingMode: PAY_PER_REQUEST  
+      Tags: 
+        - 
+          Key: "askeycloud.creator"
+          Value: !Ref TagCreator
+        - 
+          Key: "askeycloud.service"
+          Value: !Ref TagService           
+      GlobalSecondaryIndexes:             
+        - 
+          IndexName: "userNameIndex"             
+          KeySchema: 
+            - 
+              AttributeName: "userName"  
+              KeyType: "HASH"            
+            - 
+              AttributeName: "createAt" 
+              KeyType: "RANGE"           
+          Projection:                  
+            ProjectionType: "ALL"  
+  TTToken: 
+    Type: AWS::DynamoDB::Table
+    Properties: 
+      TableName: "TT_Token"             
+      AttributeDefinitions:               
+        - 
+          AttributeName: "tokenId"          
+          AttributeType: "S"                   
+      KeySchema:                         
+        - 
+          AttributeName: "tokenId"         
+          KeyType: "HASH" 
+      BillingMode: PAY_PER_REQUEST  
+      Tags: 
+        - 
+          Key: "askeycloud.creator"
+          Value: !Ref TagCreator
+        - 
+          Key: "askeycloud.service"
+          Value: !Ref TagService           
+      

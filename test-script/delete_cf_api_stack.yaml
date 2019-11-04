@@ -1,0 +1,6 @@
+- hosts: localhost
+  tasks:
+    - name: delete a api stack
+      cloudformation:
+        stack_name: "ansible-cloudformation"
+        state: "absent"

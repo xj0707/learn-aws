@@ -1,0 +1,10 @@
+  - name: create tt dynamodb
+    cloudformation:
+      stack_name: "{{db_settings.stackname}}"
+      template: "{{db_settings.cf_template}}"
+      profile: "{{profile}}"
+      region: "{{region}}"
+      # template_parameters:
+      #   TagCreator: "{{common_tags.creator}}"
+      #   TagService: "{{common_tags.service}}"
+      tags: "{{common_tags}}"

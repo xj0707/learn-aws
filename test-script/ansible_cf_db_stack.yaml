@@ -1,0 +1,17 @@
+- hosts: localhost
+  tasks:
+    - name: create a cloudformation DynamoDB stack
+      cloudformation:
+        stack_name: "cloudformation-DynamoDB"
+        # state: "present"
+        # region: "us-east-1"
+        # disable_rollback: true
+        template: "cf_dynamodb.yaml"
+        # template_parameters:
+        #   KeyName: "jmartin"
+        #   DiskType: "ephemeral"
+        #   InstanceType: "m1.small"
+        #   ClusterSize: 3
+        tags:
+          askeycloud.creator: leo_xiao
+          askeycloud.service: testServer

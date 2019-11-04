@@ -5,7 +5,7 @@
   tasks:
     - name: create a cloudformation stack
       cloudformation:
-        stack_name: "ansible-cloudformation"
+        stack_name: "ansible-cloudformation-apiGateway"
         # state: "present"
         # region: "us-east-1"
         # disable_rollback: true
@@ -16,4 +16,5 @@
         #   InstanceType: "m1.small"
         #   ClusterSize: 3
         tags:
-          Stack: "ansible-cloudformation"
+          askeycloud.creator: leo_xiao
+          askeycloud.service: testServer

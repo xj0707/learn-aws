@@ -2,6 +2,7 @@
 
 exports.handler = async function (event, context, callback) {
     let rand=Math.round(Math.random()) 
+    console.log('context:',context)
     console.log(`当前随机数是${rand}`)
     if (rand> 0) {
         console.log('认证成功')

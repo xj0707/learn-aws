@@ -1,0 +1,366 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: TT Web Management API
+
+Resources:
+  ttApi:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: leo-tt
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+  userR:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      RestApiId: !Ref ttApi
+      ParentId: !GetAtt 
+        - ttApi
+        - RootResourceId
+      PathPart: user
+  userPut:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      HttpMethod: PUT
+      ResourceId: !Ref userR
+      RestApiId: !Ref ttApi
+      AuthorizationType: CUSTOM
+      AuthorizerId: !Ref auth
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        IntegrationResponses:
+          - StatusCode: '200'
+            SelectionPattern: PROXY
+        Uri: !Sub 
+          - >-
+            arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${functionArn}/invocations
+          - functionArn: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:tt_user_putUser_PUT'
+      MethodResponses:
+        - ResponseModels:
+            application/json: Empty
+          StatusCode: '200'
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: true 
+  userGet:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      HttpMethod: GET
+      ResourceId: !Ref userR
+      RestApiId: !Ref ttApi
+      AuthorizationType: CUSTOM
+      AuthorizerId: !Ref auth
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        IntegrationResponses:
+          - StatusCode: '200'
+            SelectionPattern: PROXY
+        Uri: !Sub 
+          - >-
+            arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${functionArn}/invocations
+          - functionArn: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:tt_user_getUser_GET'
+      MethodResponses:
+        - ResponseModels:
+            application/json: Empty
+          StatusCode: '200'
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: true 
+  userDel:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      HttpMethod: DELETE
+      ResourceId: !Ref userR
+      RestApiId: !Ref ttApi
+      AuthorizationType: CUSTOM
+      AuthorizerId: !Ref auth
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        IntegrationResponses:
+          - StatusCode: '200'
+            SelectionPattern: PROXY
+        Uri: !Sub 
+          - >-
+            arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${functionArn}/invocations
+          - functionArn: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:tt_user_delUser_DELETE'
+      MethodResponses:
+        - ResponseModels:
+            application/json: Empty
+          StatusCode: '200'
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: true 
+  userPost:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      HttpMethod: POST
+      ResourceId: !Ref userR
+      RestApiId: !Ref ttApi
+      AuthorizationType: CUSTOM
+      AuthorizerId: !Ref auth
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        IntegrationResponses:
+          - StatusCode: '200'
+            SelectionPattern: PROXY
+        Uri: !Sub 
+          - >-
+            arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${functionArn}/invocations
+          - functionArn: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:tt_user_postUser_POST'
+      MethodResponses:
+        - ResponseModels:
+            application/json: Empty
+          StatusCode: '200'
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: true 
+  userLoginR:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      RestApiId: !Ref ttApi
+      ParentId: !Ref userR
+      PathPart: login
+  userLogin:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      HttpMethod: POST
+      ResourceId: !Ref userLoginR
+      RestApiId: !Ref ttApi
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        IntegrationResponses:
+          - StatusCode: '200'
+            SelectionPattern: PROXY
+        Uri: !Sub 
+          - >-
+            arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${functionArn}/invocations
+          - functionArn: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:tt_user_login_POST'
+      MethodResponses:
+        - ResponseModels:
+            application/json: Empty
+          StatusCode: '200'
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: true 
+  
+  # lambda permission
+  userPutP:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:tt_user_putUser_PUT'
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Join 
+        - ''
+        - - 'arn:aws:execute-api:'
+          - !Ref 'AWS::Region'
+          - ':'
+          - !Ref 'AWS::AccountId'
+          - ':'
+          - !Ref ttApi
+          - /*/PUT/user
+  userGetP:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:tt_user_getUser_GET'
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Join 
+        - ''
+        - - 'arn:aws:execute-api:'
+          - !Ref 'AWS::Region'
+          - ':'
+          - !Ref 'AWS::AccountId'
+          - ':'
+          - !Ref ttApi
+          - /*/GET/user
+  userDelP:
+
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:tt_user_delUser_DELETE'
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Join 
+        - ''
+        - - 'arn:aws:execute-api:'
+          - !Ref 'AWS::Region'
+          - ':'
+          - !Ref 'AWS::AccountId'
+          - ':'
+          - !Ref ttApi
+          - /*/DELETE/user
+  userPostP:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:tt_user_postUser_POST'
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Join 
+        - ''
+        - - 'arn:aws:execute-api:'
+          - !Ref 'AWS::Region'
+          - ':'
+          - !Ref 'AWS::AccountId'
+          - ':'
+          - !Ref ttApi
+          - /*/POST/user
+  userLoginP:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:tt_user_login_POST'
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Join 
+        - ''
+        - - 'arn:aws:execute-api:'
+          - !Ref 'AWS::Region'
+          - ':'
+          - !Ref 'AWS::AccountId'
+          - ':'
+          - !Ref ttApi
+          - /*/POST/user/login
+  # authorizer
+  authP:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:tt_user_auth'
+      Action: 'lambda:InvokeFunction'
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Join 
+        - ''
+        - - 'arn:aws:execute-api:'
+          - !Ref 'AWS::Region'
+          - ':'
+          - !Ref 'AWS::AccountId'
+          - ':'
+          - !Ref ttApi
+          - /authorizers/
+          - !Ref auth
+
+ # Cors
+  userCors:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      ResourceId: !Ref userR
+      RestApiId: !Ref ttApi
+      HttpMethod: OPTIONS
+      AuthorizationType: NONE
+      Integration:
+        Type: MOCK
+        IntegrationHttpMethod: OPTIONS
+        RequestTemplates:
+          application/json: '{ "statusCode" : 200 }'
+        IntegrationResponses:
+          - ResponseParameters:
+              method.response.header.Access-Control-Allow-Headers: >-
+                'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'
+              method.response.header.Access-Control-Allow-Methods: '''GET,DELETE,OPTIONS,PUT,POST'''
+              method.response.header.Access-Control-Allow-Origin: '''*'''
+            ResponseTemplates:
+              application/json: ''
+            StatusCode: '200'
+        PassthroughBehavior: NEVER
+      MethodResponses:
+        - ResponseModels:
+            application/json: Empty
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+            method.response.header.Access-Control-Allow-Origin: true
+          StatusCode: '200' 
+  userLoginCors:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      ResourceId: !Ref userLoginR
+      RestApiId: !Ref ttApi
+      HttpMethod: OPTIONS
+      AuthorizationType: NONE
+      Integration:
+        Type: MOCK
+        IntegrationHttpMethod: OPTIONS
+        RequestTemplates:
+          application/json: '{ "statusCode" : 200 }'
+        IntegrationResponses:
+          - ResponseParameters:
+              method.response.header.Access-Control-Allow-Headers: >-
+                'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'
+              method.response.header.Access-Control-Allow-Methods: '''GET,DELETE,OPTIONS,PUT,POST'''
+              method.response.header.Access-Control-Allow-Origin: '''*'''
+            ResponseTemplates:
+              application/json: ''
+            StatusCode: '200'
+        PassthroughBehavior: NEVER
+      MethodResponses:
+        - ResponseModels:
+            application/json: Empty
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+            method.response.header.Access-Control-Allow-Origin: true
+          StatusCode: '200' 
+
+  auth:
+    Type: 'AWS::ApiGateway::Authorizer'
+    Properties:
+      IdentitySource: method.request.header.Authorization
+      Name: tt-auth
+      Type: TOKEN 
+      AuthorizerResultTtlInSeconds: 0
+      AuthorizerUri: !Sub 
+        - >-
+          arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${authFuntionArn}/invocations
+        - authFuntionArn: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:tt_user_auth'   
+      RestApiId: !Ref ttApi
+
+  # GWRAccessDenied:
+  #   Type: AWS::ApiGateway::GatewayResponse
+  #   Properties:
+  #     ResponseParameters:
+  #       gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+  #       gatewayresponse.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+  #       gatewayresponse.header.Access-Control-Allow-Methods: "'DELETE,OPTIONS,POST,PUT'"
+  #     ResponseType: ACCESS_DENIED
+  #     RestApiId: !Ref ttApi
+  #     StatusCode: 200
+  #     ResponseTemplates:
+  #       application/json: "{\"msg\":\"<Access forbidden>|l10n:forbidden.no.access No access\",\"code\":403201}"
+  # GWRUnAuthorized:
+  #   Type: AWS::ApiGateway::GatewayResponse
+  #   Properties:
+  #     ResponseParameters:
+  #       gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+  #       gatewayresponse.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+  #       gatewayresponse.header.Access-Control-Allow-Methods: "'DELETE,OPTIONS,POST,PUT'"
+  #     ResponseType: UNAUTHORIZED
+  #     RestApiId: !Ref ttApi
+  #     StatusCode: 200
+  #     ResponseTemplates:
+  #       application/json: "{\"msg\":\"<Authorization error>|l10n:token.invalid Invalid token\",\"code\":401101}"
+
+  stage:
+    Type: 'AWS::ApiGateway::Stage'
+    Properties:
+      StageName: v1
+      Description: V1
+      RestApiId: !Ref ttApi
+      DeploymentId: !Ref deploy
+      Variables:
+        Stack: v1
+  deploy:
+    Type: 'AWS::ApiGateway::Deployment'
+    Properties:
+      RestApiId: !Ref ttApi  
+    DependsOn:
+      - ttApi
+      - auth
+      # - GWRAccessDenied
+      # - GWRUnAuthorized
+
+      - userR
+      - userPut
+      - userGet
+      - userDel
+      - userPost
+      - userLoginR
+      - userLogin
